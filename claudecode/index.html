@@ -1,0 +1,68 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+        }
+        .container {
+            display: flex;
+            width: 100%;
+            height: 100vh;
+        }
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+        .title {
+            padding: 10px;
+            text-align: center;
+            background: #000000;
+            color: white;
+            font-size: 14px;
+        }
+        iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="column">
+            <div class="title">haiku-4.5 (CC)</div>
+            <iframe src="haiku-4.5/fireworks.html"></iframe>
+        </div>
+        <div class="column">
+            <div class="title">haiku-4.5-thinking (CC)</div>
+            <iframe src="haiku-4.5-thinking/fireworks.html"></iframe>
+        </div>
+        <div class="column">
+            <div class="title">opus-4.5 (CC)</div>
+            <iframe src="opus-4.5/fireworks.html"></iframe>
+        </div>
+        <div class="column">
+            <div class="title">opus-4.5-think (CC)</div>
+            <iframe src="opus-4.5-think/fireworks.html"></iframe>
+        </div>
+        <div class="column">
+            <div class="title">sonnet-4.5 (CC)</div>
+            <iframe src="sonnet-4.5/fireworks.html"></iframe>
+        </div>
+        <div class="column">
+            <div class="title">sonnet-4.5-think (CC)</div>
+            <iframe src="sonnet-4.5-think/fireworks.html"></iframe>
+        </div>
+    </div>
+</body>
+</html>

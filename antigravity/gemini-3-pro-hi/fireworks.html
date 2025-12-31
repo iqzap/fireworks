@@ -1,0 +1,310 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CSS Fireworks</title>
+    <style>
+        /* 
+         * PURE CSS FIREWORKS
+         * ------------------
+         * No JavaScript. No Images. No Canvas.
+         * Uses CSS Variables for randomness simulation and box-shadows for particles.
+         */
+
+        :root {
+            --sky-top: #020204;
+            --sky-bottom: #0b1026;
+            --star-color: rgba(255, 255, 255, 0.8);
+        }
+
+        /* 1) Basic Setup & Background */
+        body, html {
+            margin: 0;
+            padding: 0;
+            width: 100vw;
+            height: 100vh;
+            overflow: hidden;
+            background: linear-gradient(to bottom, var(--sky-top) 0%, var(--sky-bottom) 100%);
+            color: white;
+            font-family: sans-serif;
+        }
+
+        /* Layered Stars Background: Created using multiple radial-gradients */
+        .sky-layer {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            /* 3 layers of stars with different frequencies */
+            background-image: 
+                radial-gradient(1px 1px at 10% 10%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 20% 40%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 30% 70%, var(--star-color), transparent),
+                radial-gradient(2px 2px at 40% 20%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 50% 50%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 60% 80%, var(--star-color), transparent),
+                radial-gradient(2px 2px at 70% 30%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 80% 60%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 90% 90%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 15% 95%, var(--star-color), transparent),
+                radial-gradient(1px 1px at 85% 15%, var(--star-color), transparent);
+            background-size: 50vw 50vh; /* Repeating pattern */
+            opacity: 0.6;
+        }
+
+        /* Subtle Haze/Smoke at the bottom */
+        .haze {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40vh;
+            background: linear-gradient(to top, rgba(20, 20, 30, 0.7), transparent);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* 2) The Firework Container */
+        .firework {
+            position: absolute;
+            bottom: 0;
+            left: var(--x, 50vw);
+            /* We use a pseudo-element for trails and one for bursts */
+            width: 0.5rem;
+            height: 0.5rem;
+            /* Debugging help: border: 1px solid red; */
+            z-index: 10;
+        }
+
+        /* 
+         * 3) The Animation Logic 
+         * The container moves vertically from bottom to target height.
+         * The pseudo-elements handle the visual changes (fade out trail, expand burst).
+         */
+        
+        .firework, .firework::before, .firework::after {
+            /* Shared timing for the loop */
+            animation-duration: var(--duration, 3s);
+            animation-delay: var(--delay, 0s);
+            animation-iteration-count: infinite;
+        }
+
+        /* The Mover: Lifts the firework up to the sky */
+        .firework {
+            animation-name: launch-mover;
+            animation-timing-function: cubic-bezier(0.25, 1, 0.5, 1); /* fast start, graceful stop */
+        }
+
+        @keyframes launch-mover {
+            0% {
+                transform: translateY(0);
+            }
+            50% {
+                /* Target height based on var */
+                transform: translateY(var(--y, -50vh)); 
+            }
+            100% {
+                /* Stay there while fading out, then reset */
+                transform: translateY(var(--y, -50vh));
+            }
+        }
+
+        /* 
+         * The Trail ::before 
+         * A vertical line that grows/moves then vanishes
+         */
+        .firework::before {
+            content: '';
+            position: absolute;
+            top: 100%; /* hanging down */
+            left: 50%;
+            transform: translateX(-50%);
+            width: 3px;
+            height: 15vh; /* Initial trail length */
+            background: linear-gradient(to bottom, var(--color), transparent);
+            opacity: 0;
+            border-radius: 50%;
+            
+            animation-name: trail-anim;
+            animation-timing-function: ease-out;
+        }
+
+        @keyframes trail-anim {
+            0% {
+                opacity: 0;
+                height: 0;
+            }
+            10% {
+                opacity: 0.8;
+                height: 10vh;
+            }
+            30% {
+                /* Near peak */
+                opacity: 1;
+                height: 15vh;
+            }
+            45% {
+                /* Just before burst */
+                opacity: 0.2;
+                height: 5vh;
+            }
+            50% {
+                /* Gone at burst */
+                opacity: 0;
+                height: 0;
+            }
+            100% {
+                opacity: 0;
+            }
+        }
+
+        /* 
+         * The Burst ::after
+         * A single small dot that uses box-shadow to replicate itself into a ring.
+         */
+        .firework::after {
+            content: '';
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            width: 4px;
+            height: 4px;
+            border-radius: 50%;
+            background: transparent; /* The center is transparent, shadows do the work */
+            
+            /* 
+             * Initial compressed state: shadows at 0 0 
+             * We can't actually animate 'box-shadow' spread nicely if we want distinct particles 
+             * moving outward.
+             * TRICK: We animate the spacing of the shadows in the keyframes.
+             */
+            
+            animation-name: burst-anim;
+            animation-timing-function: ease-out;
+        }
+
+        @keyframes burst-anim {
+            0%, 45% {
+                /* Waiting phase - hidden or clustered */
+                box-shadow: 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color), 
+                    0 0 0 var(--color);
+                transform: scale(0.1);
+                opacity: 0;
+            }
+            50% {
+                /* Ignition */
+                opacity: 1;
+                transform: scale(1);
+            }
+            75% {
+                /* Expansion phase */
+                opacity: 1;
+                box-shadow: 
+                    /* Inner Ring */
+                    -20px -30px 0 var(--color), 
+                    20px -30px 0 var(--color), 
+                    -20px 30px 0 var(--color), 
+                    20px 30px 0 var(--color), 
+                    
+                    /* Outer Cross */
+                    0px -50px 0 var(--color), 
+                    0px 50px 0 var(--color), 
+                    -50px 0px 0 var(--color), 
+                    50px 0px 0 var(--color);
+            }
+            100% {
+                /* Fade out and final spread (gravity simulation slightly via Y offset) */
+                opacity: 0;
+                transform: scale(1.5); /* extra expansion */
+                box-shadow: 
+                    /* Drooping down slightly for realism */
+                    -25px -40px 0 var(--color), 
+                    25px -40px 0 var(--color), 
+                    -25px 60px 0 var(--color), 
+                    25px 60px 0 var(--color), 
+                    
+                    0px -70px 0 var(--color), 
+                    0px 80px 0 var(--color), 
+                    -70px 10px 0 var(--color), 
+                    70px 10px 0 var(--color);
+            }
+        }
+
+        /* 
+         * Twinkle effect
+         * A separate animation for opacity flickering? 
+         * Hard to apply to ::after box-shadows alone without flashing main element.
+         * We rely on the speed of the burst-anim instead.
+         */
+
+        /* Reduced Motion Preference */
+        @media (prefers-reduced-motion: reduce) {
+            .firework {
+                animation: none;
+                display: none;
+            }
+            .sky-layer {
+                opacity: 1;
+            }
+        }
+
+        /* Utility class to create variation */
+        /* We can just use inline styles, but let's ensure box-sizing is clean */
+        * {
+            box-sizing: border-box;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="sky-layer"></div>
+    <div class="haze"></div>
+
+    <!-- 
+        Firework Configuration:
+        --x: Start position (horizontal %)
+        --y: Target translation (vertical, negative value e.g., -80vh)
+        --color: HSL or named color
+        --duration: Cycle speed
+        --delay: Start offset
+    -->
+    
+    <!-- 1. Gold, Center-ish -->
+    <div class="firework" style="--x: 50vw; --y: -75vh; --color: #ffbb00; --duration: 5s; --delay: 0s;"></div>
+
+    <!-- 2. Cyan, Left -->
+    <div class="firework" style="--x: 20vw; --y: -65vh; --color: #00ffff; --duration: 6s; --delay: 1.5s;"></div>
+
+    <!-- 3. Pink, Right -->
+    <div class="firework" style="--x: 80vw; --y: -70vh; --color: #ff00cc; --duration: 5.5s; --delay: 3s;"></div>
+
+    <!-- 4. Lime, Low Left -->
+    <div class="firework" style="--x: 30vw; --y: -50vh; --color: #33ff33; --duration: 4.5s; --delay: 0.5s;"></div>
+
+    <!-- 5. Red, High Right -->
+    <div class="firework" style="--x: 70vw; --y: -85vh; --color: #ff3333; --duration: 7s; --delay: 2.5s;"></div>
+
+    <!-- 6. White/Blue, Center High -->
+    <div class="firework" style="--x: 45vw; --y: -90vh; --color: #aaccff; --duration: 6.2s; --delay: 4s;"></div>
+
+    <!-- 7. Purple, Far Left -->
+    <div class="firework" style="--x: 10vw; --y: -60vh; --color: #aa00ff; --duration: 5.8s; --delay: 1.2s;"></div>
+
+    <!-- 8. Orange, Far Right -->
+    <div class="firework" style="--x: 90vw; --y: -55vh; --color: #ff8800; --duration: 5.2s; --delay: 3.5s;"></div>
+
+    <!-- 9. Multicolor/Teal (simulated color), Low Center -->
+    <div class="firework" style="--x: 60vw; --y: -50vh; --color: #00ffaa; --duration: 4.8s; --delay: 0.8s;"></div>
+
+</body>
+</html>

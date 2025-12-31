@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+            color: #fff;
+        }
+
+        .container {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            height: 100vh;
+        }
+
+        .column {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .title {
+            text-align: center;
+            padding: 10px;
+            background: #000;
+            font-size: 14px;
+        }
+
+        iframe {
+            width: 100%;
+            flex: 1;
+            border: none;
+            display: block;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="column">
+            <div class="title">Gemini 3 Flash (AG)</div>
+            <iframe src="gemini-3-flash/fireworks.html"></iframe>
+        </div>
+
+        <div class="column">
+            <div class="title">Gemini 3 Pro Hi (AG)</div>
+            <iframe src="gemini-3-pro-hi/fireworks.html"></iframe>
+        </div>
+
+        <div class="column">
+            <div class="title">Opus 4.5 Think (AG)</div>
+            <iframe src="opus-4.5-think/fireworks.html"></iframe>
+        </div>
+
+        <div class="column">
+            <div class="title">Sonnet 4.5 (AG)</div>
+            <iframe src="sonnet-4.5/fireworks.html"></iframe>
+        </div>
+
+        <div class="column">
+            <div class="title">Sonnet 4.5 Think (AG)</div>
+            <iframe src="sonnet-4.5-think/fireworks.html"></iframe>
+        </div>
+    </div>
+</body>
+</html>

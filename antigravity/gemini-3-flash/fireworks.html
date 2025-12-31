@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pure CSS Fireworks | Night Sky</title>
+    <style>
+        /*
+        * PURE CSS FIREWORKS
+        * No JS, No SVG, No Canvas.
+        * Uses box-shadow cloning, CSS variables, and layered animations.
+        */
+
+        :root {
+            --bg-color: #00000a;
+            --sky-gradient: radial-gradient(circle at 50% 100%, #051025 0%, #00000a 100%);
+            --p-size: 2px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            background: var(--bg-color);
+            background: var(--sky-gradient);
+            height: 100vh;
+            width: 100vw;
+            overflow: hidden;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            position: relative;
+        }
+
+        /* Subtle haze/smoke at the horizon */
+        body::after {
+            content: "";
+            position: absolute;
+            inset: 0;
+            background: radial-gradient(circle at 50% 90%, rgba(20, 30, 60, 0.4), transparent 70%);
+            pointer-events: none;
+            z-index: 1;
+        }
+
+        /* Fixed Starfield */
+        .stars {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-image: 
+                radial-gradient(1px 1px at 20% 15%, #fff, transparent),
+                radial-gradient(1px 1px at 45% 25%, #fff, transparent),
+                radial-gradient(1px 1px at 70% 10%, #fff, transparent),
+                radial-gradient(1.5px 1.5px at 15% 45%, rgba(255,255,255,0.7), transparent),
+                radial-gradient(1px 1px at 85% 55%, #fff, transparent),
+                radial-gradient(1px 1px at 35% 70%, #fff, transparent),
+                radial-gradient(1.5px 1.5px at 65% 85%, #fff, transparent),
+                radial-gradient(1px 1px at 10% 90%, #fff, transparent),
+                radial-gradient(1px 1px at 90% 30%, #fff, transparent);
+            background-size: 40% 40%;
+            opacity: 0.2;
+            z-index: 0;
+        }
+
+        /* Firework Base */
+        .firework {
+            position: absolute;
+            bottom: 0;
+            left: var(--x);
+            width: 4px;
+            height: 4px;
+            transform: translateX(-50%);
+            z-index: 10;
+        }
+
+        /* Launch Trail (Pseudo-element ::before) */
+        .firework::before {
+            content: "";
+            position: absolute;
+            bottom: 0;
+            left: 50%;
+            width: 2px;
+            height: 60px;
+            background: linear-gradient(to top, transparent, hsl(var(--hue), 100%, 80%));
+            transform: translateX(-50%) translateY(0);
+            border-radius: 2px;
+            filter: blur(1px);
+            opacity: 0;
+            animation: launch var(--duration) var(--delay) infinite cubic-bezier(0.2, 1, 0.3, 1);
+        }
+
+        /* Primary Burst (Pseudo-element ::after) */
+        .firework::after {
+            content: "";
+            position: absolute;
+            top: calc(-1 * var(--rise));
+            left: 50%;
+            width: var(--p-size);
+            height: var(--p-size);
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            /* Circular distribution using box-shadow */
+            box-shadow: 
+                /* Outer ring */
+                0 -120px 0 hsl(var(--hue), 100%, 50%),
+                85px -85px 0 hsl(var(--hue), 100%, 50%),
+                120px 0 0 hsl(var(--hue), 100%, 50%),
+                85px 85px 0 hsl(var(--hue), 100%, 50%),
+                0 120px 0 hsl(var(--hue), 100%, 50%),
+                -85px 85px 0 hsl(var(--hue), 100%, 50%),
+                -120px 0 0 hsl(var(--hue), 100%, 50%),
+                -85px -85px 0 hsl(var(--hue), 100%, 50%),
+                /* Mid ring */
+                45px -75px 0 hsl(var(--hue), 100%, 65%),
+                75px -45px 0 hsl(var(--hue), 100%, 65%),
+                75px 45px 0 hsl(var(--hue), 100%, 65%),
+                45px 75px 0 hsl(var(--hue), 100%, 65%),
+                -45px 75px 0 hsl(var(--hue), 100%, 65%),
+                -75px 45px 0 hsl(var(--hue), 100%, 65%),
+                -75px -45px 0 hsl(var(--hue), 100%, 65%),
+                -45px -75px 0 hsl(var(--hue), 100%, 65%);
+            
+            filter: drop-shadow(0 0 5px hsl(var(--hue), 100%, 50%));
+            opacity: 0;
+            animation: burst var(--duration) var(--delay) infinite cubic-bezier(0.1, 0, 0, 1), 
+                       sparkle var(--duration) var(--delay) infinite linear;
+        }
+
+        /* Secondary Layer of Sparks (Extra detail) */
+        .firework .spark {
+            position: absolute;
+            top: calc(-1 * var(--rise));
+            left: 50%;
+            width: 1px;
+            height: 1px;
+            border-radius: 50%;
+            transform: translate(-50%, -50%) scale(0);
+            box-shadow: 
+                20px -150px 1px #fff,
+                150px -20px 1px #fff,
+                -20px 150px 1px #fff,
+                -150px 20px 1px #fff,
+                100px 100px 1px #fff,
+                -100px -100px 1px #fff;
+            opacity: 0;
+            animation: burst-extra var(--duration) var(--delay) infinite cubic-bezier(0, 0, 0.1, 1),
+                       sparkle var(--duration) var(--delay) infinite linear;
+        }
+
+        @keyframes launch {
+            0% { transform: translateX(-50%) translateY(0); opacity: 0; height: 10px; }
+            5% { opacity: 1; height: 100px; }
+            45% { transform: translateX(-50%) translateY(calc(-1 * var(--rise))); opacity: 1; height: 5px; }
+            48%, 100% { transform: translateX(-50%) translateY(calc(-1 * var(--rise))); opacity: 0; height: 0; }
+        }
+
+        @keyframes burst {
+            0%, 48% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            50% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(var(--size)); opacity: 0; }
+        }
+
+        @keyframes burst-extra {
+            0%, 49% { transform: translate(-50%, -50%) scale(0); opacity: 0; }
+            51% { transform: translate(-50%, -50%) scale(0.1); opacity: 1; }
+            100% { transform: translate(-50%, -50%) scale(calc(var(--size) * 1.4)); opacity: 0; }
+        }
+
+        @keyframes sparkle {
+            0%, 50% { filter: brightness(1) drop-shadow(0 0 4px hsl(var(--hue), 100%, 50%)); }
+            60%, 80% { filter: brightness(1.5) drop-shadow(0 0 10px #fff); }
+            100% { filter: brightness(1) drop-shadow(0 0 4px hsl(var(--hue), 100%, 50%)); }
+        }
+
+        /* Reduced Motion */
+        @media (prefers-reduced-motion: reduce) {
+            .firework::before, .firework::after, .firework .spark {
+                animation: none !important;
+                opacity: 0;
+            }
+            body::after {
+                background: radial-gradient(circle at 50% 50%, rgba(10, 20, 50, 0.6), transparent 80%);
+            }
+            .stars { opacity: 0.8; }
+        }
+
+        .info {
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            color: rgba(255,255,255,0.2);
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            font-size: 10px;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            pointer-events: none;
+            z-index: 100;
+        }
+    </style>
+</head>
+<body>
+    <div class="stars"></div>
+
+    <!-- Fireworks (Minimal HTML) -->
+    <!-- Variables: --x, --delay, --size, --hue, --rise, --duration -->
+    
+    <div class="firework" style="--x: 10%; --delay: 0.1s; --size: 1.2; --hue: 0;   --rise: 70vh; --duration: 4s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 30%; --delay: 1.5s; --size: 1.5; --hue: 200; --rise: 65vh; --duration: 3.5s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 50%; --delay: 0.8s; --size: 1.0; --hue: 60;  --rise: 80vh; --duration: 4.5s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 75%; --delay: 2.2s; --size: 1.8; --hue: 130; --rise: 55vh; --duration: 3.8s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 90%; --delay: 3.4s; --size: 1.3; --hue: 280; --rise: 75vh; --duration: 4.2s;"><div class="spark"></div></div>
+    
+    <div class="firework" style="--x: 20%; --delay: 4.1s; --size: 1.6; --hue: 330; --rise: 60vh; --duration: 3.9s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 40%; --delay: 5.2s; --size: 1.1; --hue: 180; --rise: 72vh; --duration: 4.3s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 65%; --delay: 6.0s; --size: 1.4; --hue: 30;  --rise: 68vh; --duration: 4.1s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 85%; --delay: 0.5s; --size: 1.7; --hue: 220; --rise: 78vh; --duration: 4.7s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 55%; --delay: 7.2s; --size: 1.2; --hue: 300; --rise: 50vh; --duration: 3.6s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 15%; --delay: 8.5s; --size: 1.9; --hue: 100; --rise: 85vh; --duration: 5.0s;"><div class="spark"></div></div>
+    <div class="firework" style="--x: 80%; --delay: 1.8s; --size: 1.0; --hue: 45;  --rise: 62vh; --duration: 3.4s;"><div class="spark"></div></div>
+
+</body>
+</html>

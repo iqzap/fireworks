@@ -1,0 +1,482 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CSS Fireworks Animation</title>
+  <style>
+    /* ============================================
+       CSS FIREWORKS ANIMATION
+       Pure CSS - No JavaScript, Canvas, or SVG
+       ============================================ */
+
+    /* ---------- CSS Variables & Reset ---------- */
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    :root {
+      /* Base timing for animation loops */
+      --cycle: 4s;
+    }
+
+    /* ---------- Full Viewport Container ---------- */
+    body {
+      overflow: hidden;
+      background: #000;
+    }
+
+    .sky {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+
+      /* Dark sky gradient: near-black to deep navy */
+      background:
+        /* Vignette overlay */
+        radial-gradient(ellipse at center, transparent 40%, rgba(0, 0, 0, 0.7) 100%),
+        /* Main sky gradient */
+        linear-gradient(to top, #0a0a1a 0%, #0d1526 30%, #0a1628 60%, #050510 100%);
+    }
+
+    /* ---------- Faint Stars (CSS only) ---------- */
+    .stars {
+      position: absolute;
+      inset: 0;
+      background:
+        /* Layer of small stars using radial gradients */
+        radial-gradient(1px 1px at 10% 20%, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 25% 15%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1.5px 1.5px at 40% 35%, rgba(255, 255, 255, 0.9), transparent),
+        radial-gradient(1px 1px at 55% 10%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 70% 25%, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1.5px 1.5px at 85% 18%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 15% 55%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 30% 70%, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1.5px 1.5px at 50% 60%, rgba(255, 255, 255, 0.8), transparent),
+        radial-gradient(1px 1px at 65% 80%, rgba(255, 255, 255, 0.4), transparent),
+        radial-gradient(1px 1px at 80% 65%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 90% 45%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1.5px 1.5px at 5% 85%, rgba(255, 255, 255, 0.7), transparent),
+        radial-gradient(1px 1px at 35% 90%, rgba(255, 255, 255, 0.5), transparent),
+        radial-gradient(1px 1px at 60% 95%, rgba(255, 255, 255, 0.6), transparent),
+        radial-gradient(1px 1px at 95% 88%, rgba(255, 255, 255, 0.4), transparent);
+      animation: twinkle-stars 3s ease-in-out infinite alternate;
+    }
+
+    @keyframes twinkle-stars {
+      0%, 100% { opacity: 0.7; }
+      50% { opacity: 1; }
+    }
+
+    /* ---------- Subtle Haze/Smoke Effect ---------- */
+    .haze {
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(ellipse 80% 40% at 20% 80%, rgba(40, 50, 80, 0.15), transparent),
+        radial-gradient(ellipse 60% 30% at 75% 85%, rgba(50, 40, 70, 0.12), transparent),
+        radial-gradient(ellipse 100% 50% at 50% 100%, rgba(30, 30, 50, 0.2), transparent);
+      pointer-events: none;
+    }
+
+    /* ============================================
+       FIREWORK BASE STRUCTURE
+       Each .firework element uses CSS variables:
+       --x: horizontal position (%)
+       --delay: animation delay (s)
+       --size: burst size multiplier
+       --hue: color hue (0-360)
+       --rise: rise height (vh)
+       --duration: animation duration (s)
+       ============================================ */
+
+    .firework {
+      position: absolute;
+      bottom: 0;
+      left: var(--x);
+      width: 4px;
+      height: 4px;
+      transform: translateX(-50%);
+      animation: launch var(--duration, 4s) cubic-bezier(0.2, 0.8, 0.3, 1) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* ---------- Launch Trail (::before) ---------- */
+    .firework::before {
+      content: '';
+      position: absolute;
+      bottom: 0;
+      left: 50%;
+      width: 3px;
+      height: 80px;
+      transform: translateX(-50%);
+      background: linear-gradient(
+        to top,
+        transparent 0%,
+        hsla(var(--hue, 40), 100%, 70%, 0.3) 20%,
+        hsla(var(--hue, 40), 100%, 80%, 0.8) 60%,
+        hsla(var(--hue, 40), 100%, 95%, 1) 100%
+      );
+      border-radius: 50%;
+      filter: blur(1px);
+      animation: trail var(--duration, 4s) cubic-bezier(0.2, 0.8, 0.3, 1) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* ---------- Burst Sparks (::after with box-shadow) ---------- */
+    .firework::after {
+      content: '';
+      position: absolute;
+      top: calc(var(--rise, 60vh) * -1);
+      left: 50%;
+      width: calc(6px * var(--size, 1));
+      height: calc(6px * var(--size, 1));
+      transform: translate(-50%, -50%) scale(0);
+      border-radius: 50%;
+      background: hsla(var(--hue, 40), 100%, 70%, 1);
+
+      /* Box-shadow creates multiple sparks radiating outward */
+      box-shadow:
+        /* Inner ring of sparks */
+        calc(30px * var(--size, 1)) 0 0 hsla(var(--hue, 40), 100%, 75%, 1),
+        calc(-30px * var(--size, 1)) 0 0 hsla(var(--hue, 40), 100%, 75%, 1),
+        0 calc(30px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 80%, 1),
+        0 calc(-30px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 80%, 1),
+        calc(21px * var(--size, 1)) calc(21px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 70%, 1),
+        calc(-21px * var(--size, 1)) calc(21px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 70%, 1),
+        calc(21px * var(--size, 1)) calc(-21px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 70%, 1),
+        calc(-21px * var(--size, 1)) calc(-21px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 70%, 1),
+        
+        /* Middle ring of sparks */
+        calc(50px * var(--size, 1)) 0 0 hsla(calc(var(--hue, 40) + 10), 100%, 65%, 0.9),
+        calc(-50px * var(--size, 1)) 0 0 hsla(calc(var(--hue, 40) + 10), 100%, 65%, 0.9),
+        0 calc(50px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 10), 100%, 70%, 0.9),
+        0 calc(-50px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 10), 100%, 70%, 0.9),
+        calc(35px * var(--size, 1)) calc(35px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 10), 100%, 65%, 0.9),
+        calc(-35px * var(--size, 1)) calc(35px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 10), 100%, 65%, 0.9),
+        calc(35px * var(--size, 1)) calc(-35px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 10), 100%, 65%, 0.9),
+        calc(-35px * var(--size, 1)) calc(-35px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 10), 100%, 65%, 0.9),
+        
+        /* Outer ring of sparks */
+        calc(70px * var(--size, 1)) 0 0 hsla(var(--hue, 40), 100%, 60%, 0.7),
+        calc(-70px * var(--size, 1)) 0 0 hsla(var(--hue, 40), 100%, 60%, 0.7),
+        0 calc(70px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 65%, 0.7),
+        0 calc(-70px * var(--size, 1)) 0 hsla(var(--hue, 40), 100%, 65%, 0.7),
+        calc(50px * var(--size, 1)) calc(50px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 20), 100%, 60%, 0.7),
+        calc(-50px * var(--size, 1)) calc(50px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 20), 100%, 60%, 0.7),
+        calc(50px * var(--size, 1)) calc(-50px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 20), 100%, 60%, 0.7),
+        calc(-50px * var(--size, 1)) calc(-50px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 20), 100%, 60%, 0.7),
+        
+        /* Extra diagonal sparks for fuller burst */
+        calc(15px * var(--size, 1)) calc(42px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 5), 100%, 75%, 0.8),
+        calc(-15px * var(--size, 1)) calc(42px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 5), 100%, 75%, 0.8),
+        calc(15px * var(--size, 1)) calc(-42px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 5), 100%, 75%, 0.8),
+        calc(-15px * var(--size, 1)) calc(-42px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) + 5), 100%, 75%, 0.8),
+        calc(42px * var(--size, 1)) calc(15px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 5), 100%, 75%, 0.8),
+        calc(-42px * var(--size, 1)) calc(15px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 5), 100%, 75%, 0.8),
+        calc(42px * var(--size, 1)) calc(-15px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 5), 100%, 75%, 0.8),
+        calc(-42px * var(--size, 1)) calc(-15px * var(--size, 1)) 0 hsla(calc(var(--hue, 40) - 5), 100%, 75%, 0.8);
+      
+      /* Glow effect */
+      filter: drop-shadow(0 0 6px hsla(var(--hue, 40), 100%, 70%, 0.9))
+              drop-shadow(0 0 12px hsla(var(--hue, 40), 100%, 60%, 0.6));
+      
+      animation: burst var(--duration, 4s) cubic-bezier(0.1, 0.9, 0.2, 1) infinite;
+      animation-delay: var(--delay, 0s);
+    }
+
+    /* ---------- Launch Animation ---------- */
+    @keyframes launch {
+      0%, 40% {
+        opacity: 1;
+        transform: translateX(-50%) translateY(0);
+      }
+      40.1%, 100% {
+        opacity: 0;
+        transform: translateX(-50%) translateY(0);
+      }
+    }
+
+    /* ---------- Trail Animation ---------- */
+    @keyframes trail {
+      0% {
+        opacity: 0;
+        height: 0;
+        transform: translateX(-50%) translateY(0);
+      }
+      5% {
+        opacity: 1;
+        height: 60px;
+      }
+      35% {
+        opacity: 0.8;
+        height: 100px;
+        transform: translateX(-50%) translateY(calc(var(--rise, 60vh) * -1));
+      }
+      40% {
+        opacity: 0;
+        height: 20px;
+        transform: translateX(-50%) translateY(calc(var(--rise, 60vh) * -1));
+      }
+      40.1%, 100% {
+        opacity: 0;
+        height: 0;
+      }
+    }
+
+    /* ---------- Burst Animation ---------- */
+    @keyframes burst {
+      0%, 38% {
+        transform: translate(-50%, -50%) scale(0);
+        opacity: 0;
+      }
+      40% {
+        transform: translate(-50%, -50%) scale(0.3);
+        opacity: 1;
+      }
+      50% {
+        transform: translate(-50%, -50%) scale(1);
+        opacity: 1;
+      }
+      70% {
+        transform: translate(-50%, -50%) scale(1.2);
+        opacity: 0.6;
+      }
+      85% {
+        transform: translate(-50%, -50%) scale(1.3) translateY(15px);
+        opacity: 0.2;
+      }
+      100% {
+        transform: translate(-50%, -50%) scale(1.4) translateY(30px);
+        opacity: 0;
+      }
+    }
+
+    /* ============================================
+       INDIVIDUAL FIREWORK VARIATIONS
+       Using CSS variables for unique appearance
+       ============================================ */
+
+    /* Firework 1: Golden burst, left side */
+    .firework:nth-child(1) {
+      --x: 15%;
+      --delay: 0s;
+      --size: 1.2;
+      --hue: 40;
+      --rise: 55vh;
+      --duration: 3.8s;
+    }
+
+    /* Firework 2: Magenta burst, right side */
+    .firework:nth-child(2) {
+      --x: 80%;
+      --delay: 0.6s;
+      --size: 0.9;
+      --hue: 320;
+      --rise: 65vh;
+      --duration: 4.2s;
+    }
+
+    /* Firework 3: Cyan burst, center-left */
+    .firework:nth-child(3) {
+      --x: 35%;
+      --delay: 1.2s;
+      --size: 1.1;
+      --hue: 180;
+      --rise: 70vh;
+      --duration: 4s;
+    }
+
+    /* Firework 4: Red burst, center-right */
+    .firework:nth-child(4) {
+      --x: 60%;
+      --delay: 1.8s;
+      --size: 1.3;
+      --hue: 0;
+      --rise: 50vh;
+      --duration: 3.6s;
+    }
+
+    /* Firework 5: Green burst, far left */
+    .firework:nth-child(5) {
+      --x: 8%;
+      --delay: 2.4s;
+      --size: 0.85;
+      --hue: 120;
+      --rise: 60vh;
+      --duration: 4.4s;
+    }
+
+    /* Firework 6: Purple burst, far right */
+    .firework:nth-child(6) {
+      --x: 92%;
+      --delay: 0.3s;
+      --size: 1;
+      --hue: 270;
+      --rise: 58vh;
+      --duration: 3.9s;
+    }
+
+    /* Firework 7: Orange burst, center */
+    .firework:nth-child(7) {
+      --x: 50%;
+      --delay: 1.5s;
+      --size: 1.4;
+      --hue: 30;
+      --rise: 72vh;
+      --duration: 4.1s;
+    }
+
+    /* Firework 8: Blue burst, left-center */
+    .firework:nth-child(8) {
+      --x: 25%;
+      --delay: 2.1s;
+      --size: 0.95;
+      --hue: 220;
+      --rise: 62vh;
+      --duration: 3.7s;
+    }
+
+    /* Firework 9: Yellow burst, right-center */
+    .firework:nth-child(9) {
+      --x: 72%;
+      --delay: 0.9s;
+      --size: 1.15;
+      --hue: 55;
+      --rise: 68vh;
+      --duration: 4.3s;
+    }
+
+    /* Firework 10: Pink burst, near center */
+    .firework:nth-child(10) {
+      --x: 45%;
+      --delay: 2.7s;
+      --size: 1.05;
+      --hue: 340;
+      --rise: 54vh;
+      --duration: 3.5s;
+    }
+
+    /* Firework 11: Teal burst, left area */
+    .firework:nth-child(11) {
+      --x: 18%;
+      --delay: 1.9s;
+      --size: 0.9;
+      --hue: 160;
+      --rise: 66vh;
+      --duration: 4.5s;
+    }
+
+    /* Firework 12: White-ish burst (high saturation removed), right area */
+    .firework:nth-child(12) {
+      --x: 85%;
+      --delay: 2.5s;
+      --size: 1.25;
+      --hue: 50;
+      --rise: 75vh;
+      --duration: 3.4s;
+    }
+
+    /* ============================================
+       REDUCED MOTION PREFERENCE
+       Shows static sky with subtle glow, no animation
+       ============================================ */
+    @media (prefers-reduced-motion: reduce) {
+      .stars,
+      .firework,
+      .firework::before,
+      .firework::after {
+        animation: none !important;
+      }
+
+      .firework::before {
+        opacity: 0;
+      }
+
+      .firework::after {
+        opacity: 0.3;
+        transform: translate(-50%, -50%) scale(0.8);
+        filter: drop-shadow(0 0 20px hsla(var(--hue, 40), 100%, 70%, 0.4));
+      }
+
+      /* Static ambient glow for reduced motion */
+      .sky::after {
+        content: '';
+        position: absolute;
+        inset: 0;
+        background:
+          radial-gradient(circle at 15% 40%, hsla(40, 100%, 70%, 0.08), transparent 30%),
+          radial-gradient(circle at 80% 35%, hsla(320, 100%, 70%, 0.06), transparent 25%),
+          radial-gradient(circle at 50% 30%, hsla(30, 100%, 70%, 0.07), transparent 35%);
+        pointer-events: none;
+      }
+    }
+
+    /* ============================================
+       SPARK FLICKER OVERLAY (Additional sparkle)
+       Using a separate element for opacity pulsing
+       ============================================ */
+    .sparkle-overlay {
+      position: absolute;
+      inset: 0;
+      pointer-events: none;
+      background:
+        radial-gradient(circle at 15% 45%, hsla(40, 100%, 90%, 0.15), transparent 8%),
+        radial-gradient(circle at 80% 35%, hsla(320, 100%, 90%, 0.12), transparent 6%),
+        radial-gradient(circle at 50% 28%, hsla(30, 100%, 90%, 0.18), transparent 10%),
+        radial-gradient(circle at 35% 30%, hsla(180, 100%, 90%, 0.1), transparent 7%),
+        radial-gradient(circle at 60% 50%, hsla(0, 100%, 90%, 0.14), transparent 9%);
+      animation: flicker 0.15s ease-in-out infinite alternate;
+      opacity: 0;
+    }
+
+    @keyframes flicker {
+      from { opacity: 0; }
+      to { opacity: 0.5; }
+    }
+
+    /* Sync flicker with bursts */
+    .sparkle-overlay {
+      animation: ambient-glow 4s ease-in-out infinite;
+    }
+
+    @keyframes ambient-glow {
+      0%, 35%, 55%, 100% { opacity: 0; }
+      40%, 50% { opacity: 0.4; }
+    }
+  </style>
+</head>
+<body>
+  <!-- Main sky container -->
+  <div class="sky">
+    <!-- Faint background stars -->
+    <div class="stars"></div>
+    
+    <!-- Subtle atmospheric haze -->
+    <div class="haze"></div>
+    
+    <!-- Additional ambient sparkle overlay -->
+    <div class="sparkle-overlay"></div>
+    
+    <!-- 12 Firework elements with unique CSS variable combinations -->
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+    <div class="firework"></div>
+  </div>
+</body>
+</html>

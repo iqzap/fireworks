@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Fireworks Comparison</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: Arial, sans-serif;
+            background: #000;
+        }
+        .container {
+            display: flex;
+            flex-direction: column;
+            width: 100%;
+            height: 100vh;
+        }
+        .row {
+            flex: 1;
+            display: flex;
+            min-height: 0;
+        }
+
+        @media (max-width: 1024px) {
+            .row {
+                min-height: 330px;
+            }
+        }
+        .column {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+        }
+        .title {
+            padding: 10px;
+            text-align: center;
+            background: #000000;
+            color: white;
+            font-size: 12px;
+            white-space: nowrap;
+        }
+        iframe {
+            flex: 1;
+            border: none;
+            width: 100%;
+            min-height: 0;
+        }
+
+        .settings-panel {
+            position: fixed;
+            top: 0;
+            right: -350px;
+            width: 350px;
+            height: 100vh;
+            background: #222;
+            color: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.5);
+            transition: right 0.3s ease;
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .settings-panel.open {
+            right: 0;
+        }
+
+        .settings-header {
+            padding: 20px;
+            background: #333;
+            border-bottom: 1px solid #444;
+        }
+
+        .settings-header h2 {
+            margin: 0 0 10px 0;
+            font-size: 18px;
+        }
+
+        .settings-header p {
+            margin: 0;
+            font-size: 12px;
+            color: #aaa;
+        }
+
+        .settings-content {
+            padding: 20px;
+        }
+
+        .settings-group {
+            margin-bottom: 20px;
+        }
+
+        .settings-group h3 {
+            font-size: 14px;
+            margin-bottom: 10px;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .checkbox-item {
+            display: flex;
+            align-items: center;
+            padding: 8px 0;
+            cursor: pointer;
+        }
+
+        .checkbox-item input {
+            margin-right: 10px;
+            cursor: pointer;
+        }
+
+        .checkbox-item label {
+            cursor: pointer;
+            flex: 1;
+        }
+
+        .apply-btn {
+            width: 100%;
+            padding: 12px;
+            background: #0066cc;
+            color: white;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            margin-top: 10px;
+        }
+
+        .apply-btn:hover {
+            background: #0052a3;
+        }
+
+        .help-text {
+            position: fixed;
+            bottom: 10px;
+            left: 10px;
+            background: rgba(0,0,0,0.7);
+            color: white;
+            padding: 8px 12px;
+            border-radius: 4px;
+            font-size: 12px;
+            z-index: 999;
+            cursor: pointer;
+        }
+
+        .help-text:hover {
+            background: rgba(0,0,0,0.9);
+        }
+
+        .settings-btn {
+            position: fixed;
+            top: 10px;
+            right: 10px;
+            background: #0066cc;
+            color: white;
+            padding: 10px 16px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 14px;
+            z-index: 999;
+        }
+
+        .settings-btn:hover {
+            background: #0052a3;
+        }
+    </style>
+</head>
+<body>
+
+    <div class="settings-panel" id="settingsPanel"> 
+        <div class="settings-header">
+            <h2>Fireworks Settings</h2>
+            <p>Select which fireworks to display</p>
+        </div>
+        <div class="settings-content">
+            <div class="settings-group">
+                <h3>Claude Code</h3>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cc-haiku-4.5" value="claudecode/haiku-4.5/fireworks.html" checked>
+                    <label for="cc-haiku-4.5">Haiku 4.5</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cc-haiku-4.5-thinking" value="claudecode/haiku-4.5-thinking/fireworks.html" checked>
+                    <label for="cc-haiku-4.5-thinking">Haiku 4.5 Thinking</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cc-opus-4.5" value="claudecode/opus-4.5/fireworks.html" checked>
+                    <label for="cc-opus-4.5">Opus 4.5</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cc-opus-4.5-think" value="claudecode/opus-4.5-think/fireworks.html" checked>
+                    <label for="cc-opus-4.5-think">Opus 4.5 Think</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cc-sonnet-4.5" value="claudecode/sonnet-4.5/fireworks.html" checked>
+                    <label for="cc-sonnet-4.5">Sonnet 4.5</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="cc-sonnet-4.5-think" value="claudecode/sonnet-4.5-think/fireworks.html" checked>
+                    <label for="cc-sonnet-4.5-think">Sonnet 4.5 Think</label>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3>Antigravity</h3>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ag-gemini-3-flash" value="antigravity/gemini-3-flash/fireworks.html" checked>
+                    <label for="ag-gemini-3-flash">Gemini 3 Flash</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ag-gemini-3-pro-hi" value="antigravity/gemini-3-pro-hi/fireworks.html" checked>
+                    <label for="ag-gemini-3-pro-hi">Gemini 3 Pro Hi</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ag-opus-4.5-think" value="antigravity/opus-4.5-think/fireworks.html" checked>
+                    <label for="ag-opus-4.5-think">Opus 4.5 Think</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ag-sonnet-4.5" value="antigravity/sonnet-4.5/fireworks.html" checked>
+                    <label for="ag-sonnet-4.5">Sonnet 4.5</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="ag-sonnet-4.5-think" value="antigravity/sonnet-4.5-think/fireworks.html" checked>
+                    <label for="ag-sonnet-4.5-think">Sonnet 4.5 Think</label>
+                </div>
+            </div>
+
+            <div class="settings-group">
+                <h3>Layout</h3>
+                <div style="display: flex; align-items: center; gap: 10px; margin-bottom: 10px;">
+                    <label for="row-count">Show in</label>
+                    <input type="number" id="row-count" min="1" max="11" value="3" style="width: 60px; padding: 5px; background: #333; color: white; border: 1px solid #555; border-radius: 4px;">
+                    <label for="row-count">row(s)</label>
+                </div>
+                <div class="checkbox-item">
+                    <input type="checkbox" id="show-titles" checked>
+                    <label for="show-titles">Show model names</label>
+                </div>
+            </div>
+
+            <button class="apply-btn" onclick="applySettings()">Apply Changes</button>
+        </div>
+    </div>
+
+    <div class="container" id="container"></div>
+
+    <script>
+        const fireworks = [
+            { id: 'cc-haiku-4.5', path: 'claudecode/haiku-4.5/fireworks.html', title: 'Haiku 4.5 (CC)' },
+            { id: 'cc-haiku-4.5-thinking', path: 'claudecode/haiku-4.5-thinking/fireworks.html', title: 'Haiku 4.5 Thinking (CC)' },
+            { id: 'cc-opus-4.5', path: 'claudecode/opus-4.5/fireworks.html', title: 'Opus 4.5 (CC)' },
+            { id: 'cc-opus-4.5-think', path: 'claudecode/opus-4.5-think/fireworks.html', title: 'Opus 4.5 Think (CC)' },
+            { id: 'cc-sonnet-4.5', path: 'claudecode/sonnet-4.5/fireworks.html', title: 'Sonnet 4.5 (CC)' },
+            { id: 'cc-sonnet-4.5-think', path: 'claudecode/sonnet-4.5-think/fireworks.html', title: 'Sonnet 4.5 Think (CC)' },
+            { id: 'ag-gemini-3-flash', path: 'antigravity/gemini-3-flash/fireworks.html', title: 'Gemini 3 Flash (AG)' },
+            { id: 'ag-gemini-3-pro-hi', path: 'antigravity/gemini-3-pro-hi/fireworks.html', title: 'Gemini 3 Pro Hi (AG)' },
+            { id: 'ag-opus-4.5-think', path: 'antigravity/opus-4.5-think/fireworks.html', title: 'Opus 4.5 Think (AG)' },
+            { id: 'ag-sonnet-4.5', path: 'antigravity/sonnet-4.5/fireworks.html', title: 'Sonnet 4.5 (AG)' },
+            { id: 'ag-sonnet-4.5-think', path: 'antigravity/sonnet-4.5-think/fireworks.html', title: 'Sonnet 4.5 Think (AG)' }
+        ];
+
+        function getDefaultRowCount() {
+            const width = window.innerWidth;
+            if (width < 768) {
+                return 11; // Mobile
+            } else if (width <= 1024) {
+                return 6; // Tablet
+            } else {
+                return 3; // Desktop
+            }
+        }
+
+        // Set initial row count based on screen size
+        window.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('row-count').value = getDefaultRowCount();
+            renderFireworks();
+        });
+
+        // Update row count on window resize
+        let resizeTimeout;
+        window.addEventListener('resize', () => {
+            clearTimeout(resizeTimeout);
+            resizeTimeout = setTimeout(() => {
+                const newRowCount = getDefaultRowCount();
+                const currentRowCount = parseInt(document.getElementById('row-count').value);
+                if (newRowCount !== currentRowCount) {
+                    document.getElementById('row-count').value = newRowCount;
+                    renderFireworks();
+                }
+            }, 250);
+        });
+
+        function renderFireworks() {
+            const container = document.getElementById('container');
+            container.innerHTML = '';
+
+            const selected = fireworks.filter(fw => {
+                const checkbox = document.getElementById(fw.id);
+                return checkbox && checkbox.checked;
+            });
+
+            const rowCount = parseInt(document.getElementById('row-count').value) || 1;
+            const itemsPerRow = Math.ceil(selected.length / rowCount);
+            const showTitles = document.getElementById('show-titles').checked;
+
+            for (let i = 0; i < rowCount; i++) {
+                const row = document.createElement('div');
+                row.className = 'row';
+
+                const start = i * itemsPerRow;
+                const end = Math.min(start + itemsPerRow, selected.length);
+                const rowItems = selected.slice(start, end);
+
+                rowItems.forEach(fw => {
+                    const column = document.createElement('div');
+                    column.className = 'column';
+
+                    if (showTitles) {
+                        const title = document.createElement('div');
+                        title.className = 'title';
+                        title.textContent = fw.title;
+                        column.appendChild(title);
+                    }
+
+                    const iframe = document.createElement('iframe');
+                    iframe.src = fw.path;
+
+                    column.appendChild(iframe);
+                    row.appendChild(column);
+                });
+
+                if (rowItems.length > 0) {
+                    container.appendChild(row);
+                }
+            }
+        }
+
+        function applySettings() {
+            renderFireworks();
+            toggleSettings();
+        }
+
+        function toggleSettings() {
+            const panel = document.getElementById('settingsPanel');
+            panel.classList.toggle('open');
+        }
+
+        window.addEventListener('keydown', (e) => {
+            if ((e.key === 'e' || e.key === 'E') && !e.ctrlKey && !e.metaKey && !e.altKey) {
+                toggleSettings();
+            }
+        });
+    </script>
+</body>
+</html>
